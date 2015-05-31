@@ -23,6 +23,7 @@ import java.util.Set;
 
 /**
  * Goal which creates serialized instances and writes them to disc.
+ *
  * @author Justin Heesemann
  */
 @Mojo(name = "serialize", defaultPhase = LifecyclePhase.INTEGRATION_TEST)
