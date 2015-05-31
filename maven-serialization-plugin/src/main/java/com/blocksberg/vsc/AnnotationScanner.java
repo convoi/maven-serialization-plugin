@@ -21,7 +21,7 @@ import java.util.Set;
  * given packages (or subpackages of them).
  * It uses the supplied classloader to load those classes.
  *
- * @author jh
+ * @author Justin Heesemann
  */
 public class AnnotationScanner {
     private final Reflections reflections;

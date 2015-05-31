@@ -5,7 +5,7 @@ import com.blocksberg.vsc.markers.VersionedSerialized;
 import java.io.Serializable;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 @VersionedSerialized(id = "foo", version = 0)
 public class Foo implements Serializable {

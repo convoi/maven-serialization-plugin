@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class FilenameFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(FilenameFactory.class);

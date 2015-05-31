@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Serializes a complete instance to disk.
  *
- * @author jh
+ * @author Justin Heesemann
  */
 public class VersionedSerializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionedSerializer.class);

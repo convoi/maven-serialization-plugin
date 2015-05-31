@@ -1,7 +1,7 @@
 package com.blocksberg.vsc;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class SerializedVersionInfo {
     private String fullClassName;

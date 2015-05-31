@@ -18,7 +18,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class AnnotationScannerTest {
 

@@ -11,7 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class VersionedDeserializerTest {
 

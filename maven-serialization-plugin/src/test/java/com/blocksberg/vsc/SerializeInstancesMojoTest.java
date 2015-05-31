@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class SerializeInstancesMojoTest {
     @Rule

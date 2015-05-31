@@ -11,7 +11,7 @@ import java.io.InvalidClassException;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * @author jh
+ * @author Justin Heesemann
  */
 public class VersionedDeserializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionedDeserializer.class);
