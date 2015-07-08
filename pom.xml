@@ -10,7 +10,15 @@
         <module>markers</module>
     </modules>
     <name>versioned-serialization-checks parent</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/convoi/maven-serialization-plugin</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
 
     <dependencyManagement>
         <dependencies>
@@ -37,4 +45,9 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <scm>
+        <url>https://github.com/convoi/maven-serialization-plugin</url>
+        <connection>scm:git:https://github.com/convoi/maven-serialization-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/convoi/maven-serialization-plugin.git</developerConnection>
+    </scm>
 </project>
