@@ -17,18 +17,20 @@ public class VersionedDeserializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionedDeserializer.class);
     private File outputDirectory;
     private ClassLoader classLoader;
+    private final String annotationClassName;
 
-    public VersionedDeserializer(File outputDirectory, ClassLoader classLoader) {
+    public VersionedDeserializer(File outputDirectory, ClassLoader classLoader, String annotationClassName) {
 
         this.outputDirectory = outputDirectory;
         this.classLoader = classLoader;
+        this.annotationClassName = annotationClassName;
     }
 
     public void deserialize(String className)
             throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         final Class<?> aClass = classLoader.loadClass(className);
-        final String filename = FilenameFactory.createFilename(true, classLoader, className);
+        final String filename = FilenameFactory.createFilename(true, classLoader, className, annotationClassName);
         final File file = new File(outputDirectory, filename);
         if (!file.exists()) {
             return;

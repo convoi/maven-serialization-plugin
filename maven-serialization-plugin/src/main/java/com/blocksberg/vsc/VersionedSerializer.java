@@ -21,10 +21,12 @@ public class VersionedSerializer {
     private boolean enforceAnnotation = false;
     private File outputDirectory;
     private ClassLoader classLoader;
+    private final String annotationClassName;
 
-    public VersionedSerializer(File outputDirectory, ClassLoader classLoader) {
+    public VersionedSerializer(File outputDirectory, ClassLoader classLoader, String annotationClassName) {
         this.outputDirectory = outputDirectory;
         this.classLoader = classLoader;
+        this.annotationClassName = annotationClassName;
         DataProviderStrategy dataProviderStrategy = RandomDataProviderStrategy.getInstance();
         podamFactory = new PodamFactoryImpl(dataProviderStrategy);
     }
@@ -36,7 +38,7 @@ public class VersionedSerializer {
                 (Serializable) podamFactory.manufacturePojoWithFullData(classToSerialize);
         LOGGER.info("serializing : " + objectToSerialize);
         final String serialFileName = FilenameFactory.createFilename(enforceAnnotation, classLoader, classToSerialize
-                .getCanonicalName());
+                .getCanonicalName(), annotationClassName);
         serializeToFile(objectToSerialize, serialFileName);
     }
 

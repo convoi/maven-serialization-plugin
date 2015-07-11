@@ -1,6 +1,5 @@
 package com.blocksberg.vsc;
 
-import com.blocksberg.vsc.markers.VersionedSerialized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +14,12 @@ public class FilenameFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(FilenameFactory.class);
 
     public static String createFilename(boolean enforceAnnotation, ClassLoader classLoader, String
-            classNameToSerialize)
+            classNameToSerialize, String annotationClassName)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final Class<?> classToSerialize = classLoader.loadClass(classNameToSerialize);
         Annotation versionedSerialized = null;
         for (Annotation annotation : classToSerialize.getAnnotations()) {
-            if (annotation.annotationType().getCanonicalName().equals(VersionedSerialized.class.getCanonicalName())) {
+            if (annotation.annotationType().getCanonicalName().equals(annotationClassName)) {
                 LOGGER.info("found a VersionedSerialized annotation");
                 versionedSerialized = annotation;
             } else {

@@ -1,5 +1,6 @@
 package com.blocksberg.vsc;
 
+import com.blocksberg.vsc.markers.VersionedSerialized;
 import com.blocksberg.vsc.testmodel.bad.FooNotYetSerialized;
 import com.blocksberg.vsc.testmodel.good.Foo;
 import org.junit.Test;
@@ -31,6 +32,7 @@ public class VersionedDeserializerTest {
     private VersionedDeserializer getVersionedDeserializer() throws URISyntaxException {
         final URI resource = getClass().getResource("/outputDirectory").toURI();
         final File outputDirectory = new File(resource);
-        return new VersionedDeserializer(outputDirectory, this.getClass().getClassLoader());
+        return new VersionedDeserializer(outputDirectory, this.getClass().getClassLoader(),
+                VersionedSerialized.class.getCanonicalName());
     }
 }

@@ -77,8 +77,8 @@ public class SerializeInstancesMojo
             classLoader = getClassLoader();
             initAnnotationScanner();
 
-            serializer = new VersionedSerializer(outputDirectory, classLoader);
-            deserializer = new VersionedDeserializer(outputDirectory, classLoader);
+            serializer = new VersionedSerializer(outputDirectory, classLoader, annotationClass);
+            deserializer = new VersionedDeserializer(outputDirectory, classLoader, annotationClass);
             if (scanForAnnotation) {
                 try {
                     checkAnnotatedClasses();
