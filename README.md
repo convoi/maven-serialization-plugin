@@ -11,6 +11,7 @@ tries to deserialize it and checks if the class of the deserialized instance is 
 
 ## usage
 Usage consists of three steps:
+
 1. add the plugin to your pom.xml
 2. add an annotation (see above) to your project
 3. annotate classes with that annotation
