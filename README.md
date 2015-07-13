@@ -26,7 +26,7 @@ public @interface VersionedSerialized {
         JAVA;
     }
 }
-``
+```
 
 Feel free to pick a better name.
 
