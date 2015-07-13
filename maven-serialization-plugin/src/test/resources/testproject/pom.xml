@@ -33,7 +33,6 @@
                 <configuration>
                     <outputDirectory>serialized</outputDirectory>
                     <annotationClass>com.blocksberg.vsc.markers.VersionedSerialized</annotationClass>
-                    <scanForAnnotation>true</scanForAnnotation>
                     <scanPackages>
                         <scanPackage>com.blocksberg.vsc.testmodel.good</scanPackage>
                     </scanPackages>
