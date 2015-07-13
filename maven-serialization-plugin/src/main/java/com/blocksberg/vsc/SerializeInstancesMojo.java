@@ -1,6 +1,5 @@
 package com.blocksberg.vsc;
 
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
@@ -46,15 +45,11 @@ public class SerializeInstancesMojo
     @Parameter(name = "enforceAnnotatedClasses", defaultValue = "false")
     private boolean enforceAnnotatedClasses;
 
-    @Parameter(name = "scanForAnnotation", defaultValue = "false")
-    private boolean scanForAnnotation;
-
     @Parameter(name = "scanPackages")
     private List<String> scanPackages;
 
     @Parameter(name = "serializedClasses", property = "serializedClass")
     private List<SerializedVersionInfo> serializedClasses;
-
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -79,14 +74,12 @@ public class SerializeInstancesMojo
 
             serializer = new VersionedSerializer(outputDirectory, classLoader, annotationClass);
             deserializer = new VersionedDeserializer(outputDirectory, classLoader, annotationClass);
-            if (scanForAnnotation) {
-                try {
-                    checkAnnotatedClasses();
-                    serializeAnnotatedClasses();
-                } catch (Exception e) {
-                    throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
-                            + e.getMessage(), e);
-                }
+            try {
+                checkAnnotatedClasses();
+                serializeAnnotatedClasses();
+            } catch (Exception e) {
+                throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
+                        + e.getMessage(), e);
             }
         } catch (DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("dependecy resolution problem", e);
@@ -141,9 +134,9 @@ public class SerializeInstancesMojo
             throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         final Set<Class<?>> classes = annotationScanner.scan();
-        getLog().info("found "+classes.size()+" classes, annotated by "+annotationClass);
+        getLog().info("found " + classes.size() + " classes, annotated by " + annotationClass);
         for (Class<?> aClass : classes) {
-            getLog().info("trying to serialize instance of " + aClass.getCanonicalName());
+            getLog().debug("trying to serialize instance of " + aClass.getCanonicalName());
             serializer.serialize(aClass);
         }
     }

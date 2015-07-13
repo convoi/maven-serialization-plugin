@@ -36,7 +36,7 @@ public class VersionedSerializer {
             InvocationTargetException {
         final Serializable objectToSerialize =
                 (Serializable) podamFactory.manufacturePojoWithFullData(classToSerialize);
-        LOGGER.info("serializing : " + objectToSerialize);
+        LOGGER.debug("serializing : " + objectToSerialize);
         final String serialFileName = FilenameFactory.createFilename(enforceAnnotation, classLoader, classToSerialize
                 .getCanonicalName(), annotationClassName);
         serializeToFile(objectToSerialize, serialFileName);

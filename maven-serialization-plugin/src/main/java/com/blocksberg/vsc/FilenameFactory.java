@@ -20,12 +20,12 @@ public class FilenameFactory {
         Annotation versionedSerialized = null;
         for (Annotation annotation : classToSerialize.getAnnotations()) {
             if (annotation.annotationType().getCanonicalName().equals(annotationClassName)) {
-                LOGGER.info("found a VersionedSerialized annotation");
+                LOGGER.debug("found a VersionedSerialized annotation");
                 versionedSerialized = annotation;
             } else {
-                LOGGER.info("found a not handled annotation:" + annotation.getClass().getCanonicalName());
-                LOGGER.info("annotation has type:" + annotation.annotationType());
-                LOGGER.info("annotation has methods:" + annotation.getClass().getMethods());
+                LOGGER.trace("found a not handled annotation:" + annotation.getClass().getCanonicalName());
+                LOGGER.trace("annotation has type:" + annotation.annotationType());
+                LOGGER.trace("annotation has methods:" + annotation.getClass().getMethods());
             }
         }
 

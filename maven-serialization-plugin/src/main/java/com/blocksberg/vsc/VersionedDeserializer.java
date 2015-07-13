@@ -38,21 +38,26 @@ public class VersionedDeserializer {
         deserializeClassFromFile(aClass, file);
     }
 
-    private void deserializeClassFromFile(Class<?> aClass, File file) throws IOException, ClassNotFoundException {
+    private void deserializeClassFromFile(Class<?> expectedClass, File file) throws IOException, ClassNotFoundException {
         final FileInputStream in = new FileInputStream(file);
         try {
-            LOGGER.info("trying to deserialize:" + file + " as " + aClass.getCanonicalName());
+            LOGGER.debug("trying to deserialize:" + file + " as " + expectedClass.getCanonicalName());
             final ClassLoaderObjectInputStream objectInputStream =
                     new ClassLoaderObjectInputStream(classLoader, in);
-            final Object o = objectInputStream.readObject();
-            LOGGER.info("deserialized object: " + o);
-            if (!o.getClass().equals(aClass)) {
-                LOGGER.warn("expected " + aClass.getCanonicalName() + ", but was " + o.getClass().getCanonicalName());
-                throw new InvalidClassException(o.getClass().getCanonicalName(),
-                        "expected class " + aClass.getCanonicalName() + ", but was " + o.getClass().getCanonicalName());
+            final Object deserializedObject = objectInputStream.readObject();
+            if (!deserializedObject.getClass().equals(expectedClass)) {
+                LOGGER.error(createClassMissmatchMessage(expectedClass, deserializedObject));
+                throw new InvalidClassException(deserializedObject.getClass().getCanonicalName(),
+                        "expected class " + expectedClass.getCanonicalName() + ", "
+                                + "but was " + deserializedObject.getClass().getCanonicalName());
             }
         } finally {
             in.close();
         }
+    }
+
+    private String createClassMissmatchMessage(Class<?> expectedClass, Object deserializedObject) {
+        return "expected " + expectedClass.getCanonicalName() + ", "
+                + "but was " + deserializedObject.getClass().getCanonicalName();
     }
 }
