@@ -141,6 +141,7 @@ public class SerializeInstancesMojo
             throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         final Set<Class<?>> classes = annotationScanner.scan();
+        getLog().info("found "+classes.size()+" classes, annotated by "+annotationClass);
         for (Class<?> aClass : classes) {
             getLog().info("trying to serialize instance of " + aClass.getCanonicalName());
             serializer.serialize(aClass);

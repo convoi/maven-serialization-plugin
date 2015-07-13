@@ -21,6 +21,15 @@
                 <groupId>com.blocksberg.versioned-serialization</groupId>
                 <artifactId>versioned-serialization-maven-plugin</artifactId>
                 <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>test-serialization</id>
+                        <goals>
+                            <goal>serialize</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                    </execution>
+                </executions>
                 <configuration>
                     <outputDirectory>serialized</outputDirectory>
                     <annotationClass>com.blocksberg.vsc.markers.VersionedSerialized</annotationClass>

@@ -80,7 +80,8 @@ public class AnnotationScanner {
 
 
     public Set<Class<?>> scan() throws ClassNotFoundException {
-        LOGGER.info("scanning:" + urlsToScan);
-        return reflections.getTypesAnnotatedWith(getAnnotationClass(annotationName));
+        final Class<? extends Annotation> annotationClass = getAnnotationClass(annotationName);
+        LOGGER.info("scanning:" + urlsToScan+ " for classes annotated with:"+annotationClass.getName());
+        return reflections.getTypesAnnotatedWith(annotationClass);
     }
 }
