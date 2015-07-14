@@ -1,11 +1,8 @@
 package com.blocksberg.vsc;
 
+import com.blocksberg.vsc.manufacturing.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.co.jemos.podam.api.DataProviderStrategy;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
-import uk.co.jemos.podam.api.RandomDataProviderStrategy;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class VersionedSerializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionedSerializer.class);
-    private final PodamFactory podamFactory;
+    private final InstanceFactory instanceFactory;
     private boolean enforceAnnotation = false;
     private File outputDirectory;
     private ClassLoader classLoader;
@@ -27,19 +24,30 @@ public class VersionedSerializer {
         this.outputDirectory = outputDirectory;
         this.classLoader = classLoader;
         this.annotationClassName = annotationClassName;
-        DataProviderStrategy dataProviderStrategy = RandomDataProviderStrategy.getInstance();
-        podamFactory = new PodamFactoryImpl(dataProviderStrategy);
+        instanceFactory = new InstanceFactory();
+
     }
 
     public void serialize(Class classToSerialize)
             throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
-        final Serializable objectToSerialize =
-                (Serializable) podamFactory.manufacturePojoWithFullData(classToSerialize);
+        final Serializable objectToSerialize = instanceFactory.createInstance(classToSerialize);
         LOGGER.debug("serializing : " + objectToSerialize);
         final String serialFileName = FilenameFactory.createFilename(enforceAnnotation, classLoader, classToSerialize
                 .getCanonicalName(), annotationClassName);
         serializeToFile(objectToSerialize, serialFileName);
+    }
+
+    public void serializeClass(Class classToSerialize)
+            throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException {
+        final String filename = FilenameFactory.createFilename(enforceAnnotation, classLoader, classToSerialize
+                .getCanonicalName(), annotationClassName);
+        serializeToFile(classToSerialize, filename);
+    }
+
+    private Serializable manufactureInstance(Class classToSerialize) {
+        return instanceFactory.createInstance(classToSerialize);
     }
 
     private void serializeToFile(Serializable objectToSerialize, String serialFileName) throws IOException {
