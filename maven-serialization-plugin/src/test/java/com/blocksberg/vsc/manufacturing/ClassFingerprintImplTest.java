@@ -3,6 +3,7 @@ package com.blocksberg.vsc.manufacturing;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -11,25 +12,26 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ClassFingerprintTest {
+public class ClassFingerprintImplTest {
 
     @Test
-    public void algorithmComputesDifferentFingerprintsForDifferentClasses() throws NoSuchFieldException, IllegalAccessException {
-        ClassFingerprint testClassFingerprint = new ClassFingerprint(TestClass.class);
-        ClassFingerprint anotherTestClassFingerprint = new ClassFingerprint(AnotherTestClass.class);
-        assertThat(testClassFingerprint.get(), is(not(anotherTestClassFingerprint.get())));
+    public void computesDifferentFingerprintsForDifferentClasses() throws NoSuchFieldException, IllegalAccessException {
+        ClassFingerprint testClassFingerprint = new ClassFingerprintImpl(TestClass.class);
+        ClassFingerprint anotherTestClassFingerprint = new ClassFingerprintImpl(AnotherTestClass.class);
+        assertThat(testClassFingerprint.getFingerprint(), is(not(anotherTestClassFingerprint.getFingerprint())));
     }
 
     @Test
-    public void algorithmCanExcludePackages() throws NoSuchFieldException, IllegalAccessException {
-        ClassFingerprint testClassFingerprintExcluded = new ClassFingerprint(TestClass.class, "java.lang", "java.util");
-        ClassFingerprint testClassFingerprint = new ClassFingerprint(TestClass.class);
-        assertThat(testClassFingerprint.get(), is(not(testClassFingerprintExcluded.get())));
+    public void canExcludePackages() throws NoSuchFieldException, IllegalAccessException {
+        ClassFingerprint
+                testClassFingerprintExcluded = new ClassFingerprintImpl(TestClass.class, "java.lang", "java.util");
+        ClassFingerprint testClassFingerprint = new ClassFingerprintImpl(TestClass.class);
+        assertThat(testClassFingerprint.getFingerprint(), is(not(testClassFingerprintExcluded.getFingerprint())));
     }
 
     @Test
-    public void algorithmTerminatesForCyclicDependency() throws NoSuchFieldException, IllegalAccessException {
-        ClassFingerprint firstFingerprint = new ClassFingerprint(FirstCyclicDependencyTestClass.class);
+    public void terminatesForCyclicDependency() throws NoSuchFieldException, IllegalAccessException {
+        ClassFingerprint firstFingerprint = new ClassFingerprintImpl(FirstCyclicDependencyTestClass.class);
         assertTrue(true);
     }
 
@@ -49,6 +51,7 @@ public class ClassFingerprintTest {
     private static class AnotherTestClass implements Serializable {
         int integerField = 1;
         String stringField = "Hello!";
+        ArrayList<String> list = new ArrayList<String>();
     }
 
     private static class FirstCyclicDependencyTestClass implements Serializable {
