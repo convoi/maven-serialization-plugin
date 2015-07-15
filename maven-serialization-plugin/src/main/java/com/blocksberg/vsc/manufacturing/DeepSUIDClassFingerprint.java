@@ -20,13 +20,13 @@ import java.util.Set;
  *
  * Created by tbecker on 14.07.2015.
  */
-public class ClassFingerprintImpl implements ClassFingerprint {
+public class DeepSUIDClassFingerprint implements ClassFingerprint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClassFingerprintImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeepSUIDClassFingerprint.class);
     private Class<?> clazz;
     private long fingerprint;
 
-    public ClassFingerprintImpl(Class<?> clazz, String... excludedPackages)
+    public DeepSUIDClassFingerprint(Class<?> clazz, String... excludedPackages)
             throws NoSuchFieldException, IllegalAccessException {
         this.clazz = clazz;
         Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz, excludedPackages);
@@ -38,19 +38,19 @@ public class ClassFingerprintImpl implements ClassFingerprint {
 
     private Set<Class<?>> collectClasses(Set<Class<?>> classes, Class<?> clazz, String... excludedPackages) {
         if (!classes.contains(clazz) && !isExcluded(clazz, excludedPackages)) {
-                classes.add(clazz);
-                Field[] clazzDeclaredFields = clazz.getDeclaredFields();
-                for (Field declaredField : clazzDeclaredFields) {
-                    Type type = declaredField.getGenericType();
-                    if (type instanceof ParameterizedType) {
-                        for (Type parameterType : ((ParameterizedType) type).getActualTypeArguments()) {
-                            if (parameterType instanceof Class) {
-                                collectClasses(classes, (Class) parameterType, excludedPackages);
-                            }
+            classes.add(clazz);
+            Field[] clazzDeclaredFields = clazz.getDeclaredFields();
+            for (Field declaredField : clazzDeclaredFields) {
+                Type type = declaredField.getGenericType();
+                if (type instanceof ParameterizedType) {
+                    for (Type parameterType : ((ParameterizedType) type).getActualTypeArguments()) {
+                        if (parameterType instanceof Class) {
+                            collectClasses(classes, (Class) parameterType, excludedPackages);
                         }
                     }
-                    collectClasses(classes, declaredField.getType(), excludedPackages);
                 }
+                collectClasses(classes, declaredField.getType(), excludedPackages);
+            }
         }
         return classes;
     }
@@ -87,12 +87,14 @@ public class ClassFingerprintImpl implements ClassFingerprint {
     }
 
 
-    @Override public Class<?> getFingerprintClass() {
+    @Override
+    public Class<?> getFingerprintClass() {
         return clazz;
     }
 
 
-    @Override public long getFingerprint() {
+    @Override
+    public long getFingerprint() {
         return fingerprint;
     }
 

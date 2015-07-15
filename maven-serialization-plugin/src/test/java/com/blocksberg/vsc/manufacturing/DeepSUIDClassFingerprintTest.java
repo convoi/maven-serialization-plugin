@@ -12,26 +12,26 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ClassFingerprintImplTest {
+public class DeepSUIDClassFingerprintTest {
 
     @Test
     public void computesDifferentFingerprintsForDifferentClasses() throws NoSuchFieldException, IllegalAccessException {
-        ClassFingerprint testClassFingerprint = new ClassFingerprintImpl(TestClass.class);
-        ClassFingerprint anotherTestClassFingerprint = new ClassFingerprintImpl(AnotherTestClass.class);
+        ClassFingerprint testClassFingerprint = new DeepSUIDClassFingerprint(TestClass.class);
+        ClassFingerprint anotherTestClassFingerprint = new DeepSUIDClassFingerprint(AnotherTestClass.class);
         assertThat(testClassFingerprint.getFingerprint(), is(not(anotherTestClassFingerprint.getFingerprint())));
     }
 
     @Test
     public void canExcludePackages() throws NoSuchFieldException, IllegalAccessException {
         ClassFingerprint
-                testClassFingerprintExcluded = new ClassFingerprintImpl(TestClass.class, "java.lang", "java.util");
-        ClassFingerprint testClassFingerprint = new ClassFingerprintImpl(TestClass.class);
+                testClassFingerprintExcluded = new DeepSUIDClassFingerprint(TestClass.class, "java.lang", "java.util");
+        ClassFingerprint testClassFingerprint = new DeepSUIDClassFingerprint(TestClass.class);
         assertThat(testClassFingerprint.getFingerprint(), is(not(testClassFingerprintExcluded.getFingerprint())));
     }
 
     @Test
     public void terminatesForCyclicDependency() throws NoSuchFieldException, IllegalAccessException {
-        ClassFingerprint firstFingerprint = new ClassFingerprintImpl(FirstCyclicDependencyTestClass.class);
+        ClassFingerprint firstFingerprint = new DeepSUIDClassFingerprint(FirstCyclicDependencyTestClass.class);
         assertTrue(true);
     }
 
