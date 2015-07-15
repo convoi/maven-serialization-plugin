@@ -5,7 +5,6 @@ package com.blocksberg.vsc.manufacturing;
  *
  * Created by tbecker on 15.07.2015.
  */
-public interface ClassFingerprint {
-    Class<?> getFingerprintClass();
-    long getFingerprint();
+public interface FingerprintGenerator {
+    long getFingerprint(Class<?> clazz, String... excludedPackages) throws NoSuchFieldException, IllegalAccessException;
 }

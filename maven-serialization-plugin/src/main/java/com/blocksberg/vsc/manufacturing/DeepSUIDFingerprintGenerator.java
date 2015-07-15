@@ -20,21 +20,18 @@ import java.util.Set;
  *
  * Created by tbecker on 14.07.2015.
  */
-public class DeepSUIDClassFingerprint implements ClassFingerprint {
+public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeepSUIDClassFingerprint.class);
-    private Class<?> clazz;
-    private long fingerprint;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeepSUIDFingerprintGenerator.class);
 
-    public DeepSUIDClassFingerprint(Class<?> clazz, String... excludedPackages)
+    @Override
+    public long getFingerprint(Class<?> clazz, String... excludedPackages)
             throws NoSuchFieldException, IllegalAccessException {
-        this.clazz = clazz;
         Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz, excludedPackages);
         Set<Class<?>> serializableClasses = filterSerializableClasses(classes);
         Map<Class<?>, Long> serialVersionUIDMap = buildSerialVersionUIDMap(serializableClasses);
-        fingerprint = generateFingerprint(serialVersionUIDMap);
+        return generateFingerprint(serialVersionUIDMap);
     }
-
 
     private Set<Class<?>> collectClasses(Set<Class<?>> classes, Class<?> clazz, String... excludedPackages) {
         if (!classes.contains(clazz) && !isExcluded(clazz, excludedPackages)) {
@@ -85,19 +82,6 @@ public class DeepSUIDClassFingerprint implements ClassFingerprint {
         }
         return serialVersionUIDMap;
     }
-
-
-    @Override
-    public Class<?> getFingerprintClass() {
-        return clazz;
-    }
-
-
-    @Override
-    public long getFingerprint() {
-        return fingerprint;
-    }
-
 
     private boolean isSerializable(Class<?> clazz) {
         ObjectStreamClass c = ObjectStreamClass.lookup(clazz);
