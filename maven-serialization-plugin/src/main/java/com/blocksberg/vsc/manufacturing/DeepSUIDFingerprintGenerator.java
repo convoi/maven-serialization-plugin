@@ -14,27 +14,38 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Computes a fingerprint for a given class,
- * i.e. a hash generated from the computed serial version uids of all the
+ * Computes a fingerprint for a given class, i.e. a hash generated from the computed serial version uids of all the
  * serializable classes directly or indirectly used by the given class via fields.
- *
+ * 
  * Created by tbecker on 14.07.2015.
  */
 public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeepSUIDFingerprintGenerator.class);
+    private String[] excludedPackages;
+
+    public DeepSUIDFingerprintGenerator(String... excludedPackages) {
+        this.excludedPackages = excludedPackages;
+    }
 
     @Override
-    public long getFingerprint(Class<?> clazz, String... excludedPackages)
-            throws NoSuchFieldException, IllegalAccessException {
-        Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz, excludedPackages);
+    public long getFingerprint(Class<?> clazz) throws FingerprintGenerationException {
+        Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz);
         Set<Class<?>> serializableClasses = filterSerializableClasses(classes);
-        Map<Class<?>, Long> serialVersionUIDMap = buildSerialVersionUIDMap(serializableClasses);
+        Map<Class<?>, Long> serialVersionUIDMap;
+        try {
+            serialVersionUIDMap = buildSerialVersionUIDMap(serializableClasses);
+        } catch (NoSuchFieldException e) {
+            throw new FingerprintGenerationException(e);
+        } catch (IllegalAccessException e) {
+            throw new FingerprintGenerationException(e);
+        }
+
         return generateFingerprint(serialVersionUIDMap);
     }
 
-    private Set<Class<?>> collectClasses(Set<Class<?>> classes, Class<?> clazz, String... excludedPackages) {
-        if (!classes.contains(clazz) && !isExcluded(clazz, excludedPackages)) {
+    private Set<Class<?>> collectClasses(Set<Class<?>> classes, Class<?> clazz) {
+        if (!classes.contains(clazz) && !isExcluded(clazz)) {
             classes.add(clazz);
             Field[] clazzDeclaredFields = clazz.getDeclaredFields();
             for (Field declaredField : clazzDeclaredFields) {
@@ -42,18 +53,17 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
                 if (type instanceof ParameterizedType) {
                     for (Type parameterType : ((ParameterizedType) type).getActualTypeArguments()) {
                         if (parameterType instanceof Class) {
-                            collectClasses(classes, (Class) parameterType, excludedPackages);
+                            collectClasses(classes, (Class<?>) parameterType);
                         }
                     }
                 }
-                collectClasses(classes, declaredField.getType(), excludedPackages);
+                collectClasses(classes, declaredField.getType());
             }
         }
         return classes;
     }
 
-
-    private boolean isExcluded(Class<?> clazz, String... excludedPackages) {
+    private boolean isExcluded(Class<?> clazz) {
         for (String excludedPackage : excludedPackages) {
             if (clazz.getCanonicalName().startsWith(excludedPackage)) {
                 return true;
@@ -61,7 +71,6 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         }
         return false;
     }
-
 
     private Set<Class<?>> filterSerializableClasses(Set<Class<?>> classes) {
         Set<Class<?>> serializableClasses = new HashSet<Class<?>>();
@@ -73,9 +82,8 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         return serializableClasses;
     }
 
-
     private Map<Class<?>, Long> buildSerialVersionUIDMap(Set<Class<?>> serializableClasses)
-            throws NoSuchFieldException, IllegalAccessException {
+        throws NoSuchFieldException, IllegalAccessException {
         Map<Class<?>, Long> serialVersionUIDMap = new HashMap<Class<?>, Long>();
         for (Class<?> clazz : serializableClasses) {
             serialVersionUIDMap.put(clazz, getComputedSerialVersionUID(clazz));
@@ -87,7 +95,6 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         ObjectStreamClass c = ObjectStreamClass.lookup(clazz);
         return c != null;
     }
-
 
     private long getComputedSerialVersionUID(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
         final ObjectStreamClass objectStreamClass = ObjectStreamClass.lookup(clazz);

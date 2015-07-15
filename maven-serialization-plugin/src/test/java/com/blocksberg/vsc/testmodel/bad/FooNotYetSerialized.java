@@ -5,6 +5,6 @@ import com.blocksberg.vsc.markers.VersionedSerialized;
 /**
  * @author Justin Heesemann
  */
-@VersionedSerialized(id = "foo2")
+@VersionedSerialized
 public class FooNotYetSerialized {
 }

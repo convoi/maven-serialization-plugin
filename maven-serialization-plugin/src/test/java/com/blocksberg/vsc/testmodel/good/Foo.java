@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * @author Justin Heesemann
  */
-@VersionedSerialized(id = "foo", version = 0)
+@VersionedSerialized
 public class Foo implements Serializable {
 
     private int intValue;

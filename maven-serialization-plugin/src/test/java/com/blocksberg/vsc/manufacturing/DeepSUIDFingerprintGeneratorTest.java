@@ -15,29 +15,32 @@ import static org.junit.Assert.assertTrue;
 public class DeepSUIDFingerprintGeneratorTest {
 
     @Test
-    public void computesDifferentFingerprintsForDifferentClasses() throws NoSuchFieldException, IllegalAccessException {
-        FingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+    public void computesDifferentFingerprintsForDifferentClasses() throws Exception {
+        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
         long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
         long anotherTestClassFingerprint = fingerprintGenerator.getFingerprint(AnotherTestClass.class);
         assertThat(testClassFingerprint, is(not(anotherTestClassFingerprint)));
     }
 
     @Test
-    public void canExcludePackages() throws NoSuchFieldException, IllegalAccessException {
-        FingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
-        long testClassFingerprintExcluded = fingerprintGenerator.getFingerprint(TestClass.class, "java.lang", "java.util");
+    public void canExcludePackages() throws Exception {
+        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+        DeepSUIDFingerprintGenerator fingerprintGeneratorWithExclusion =
+                new DeepSUIDFingerprintGenerator("java.lang", "java.util");
         long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
+        long testClassFingerprintExcluded = fingerprintGeneratorWithExclusion.getFingerprint(TestClass.class);
         assertThat(testClassFingerprintExcluded, is(not(testClassFingerprint)));
     }
 
     @Test
-    public void terminatesForCyclicDependency() throws NoSuchFieldException, IllegalAccessException {
-        FingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+    public void terminatesForCyclicDependency() throws Exception {
+        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
         fingerprintGenerator.getFingerprint(FirstCyclicDependencyTestClass.class);
         assertTrue(true);
     }
 
     private static class TestClass implements Serializable {
+        private static final long serialVersionUID = -788241330095110156L;
         Collection<Long> longs = new LinkedList<Long>();
         AnotherTestClass anotherTestClassField = new AnotherTestClass();
         Double doubleWrapperField = new Double(5.0);
@@ -48,7 +51,6 @@ public class DeepSUIDFingerprintGeneratorTest {
             integerWrapperArray[1] = 123;
         }
     }
-
 
     private static class AnotherTestClass implements Serializable {
         int integerField = 1;

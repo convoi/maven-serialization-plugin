@@ -11,9 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VersionedSerialized {
-    String id();
-
-    int version() default 0;
 
     SerializationTechnique serialization() default SerializationTechnique.JAVA;
 

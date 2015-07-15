@@ -1,6 +1,7 @@
 package com.blocksberg.vsc;
 
 import org.apache.maven.plugin.testing.MojoRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -9,7 +10,8 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Justin Heesemann
  */
-public class SerializeInstancesMojoTest {
+@Ignore
+public class ValidateFingerprintsMojoTest {
     @Rule
     public MojoRule rule = new MojoRule() {
         @Override
@@ -23,7 +25,7 @@ public class SerializeInstancesMojoTest {
 
     @Test
     public void test() throws Exception {
-        final SerializeInstancesMojo mojo = (SerializeInstancesMojo) rule.lookupMojo("serialize",
+        final CreateFingerprintsMojo mojo = (CreateFingerprintsMojo) rule.lookupMojo("validate",
                 "src/test/resources/testproject/pom.xml");
         assertNotNull("mojo should be found", mojo);
         mojo.execute();
