@@ -15,7 +15,7 @@ import java.util.Set;
 
 /**
  * Computes a fingerprint for a given class,
- * i.e. a hash computed from the serial version uids of all the
+ * i.e. a hash generated from the computed serial version uids of all the
  * serializable classes directly or indirectly used by the given class via fields.
  *
  * Created by tbecker on 14.07.2015.
