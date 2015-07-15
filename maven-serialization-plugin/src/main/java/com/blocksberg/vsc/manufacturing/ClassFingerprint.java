@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Computes a fingerprint for a given class, i.e. a hash that ...
- * <p/>
- * <p/>
+ * Computes a fingerprint for a given class,
+ * i.e. a hash computed from the serial version uids of all the classes directly or indirectly used by the given class.
+ *
  * Created by tbecker on 14.07.2015.
  */
 public class ClassFingerprint {
