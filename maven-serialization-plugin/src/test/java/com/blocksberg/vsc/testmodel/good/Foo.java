@@ -1,11 +1,8 @@
 package com.blocksberg.vsc.testmodel.good;
 
 import com.blocksberg.vsc.markers.VersionedSerialized;
-import uk.co.jemos.podam.common.PodamLongValue;
-import uk.co.jemos.podam.common.PodamStrategyValue;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @author Justin Heesemann
@@ -24,7 +21,6 @@ public class Foo implements Serializable {
 
     private Integer integerObject;
     private Boolean BooleanObject;
-    private String stringObject;
     private Long longObject;
     private Float floatObject;
     private Double doubleObject;
@@ -67,10 +63,6 @@ public class Foo implements Serializable {
         return BooleanObject;
     }
 
-    public String getStringObject() {
-        return stringObject;
-    }
-
     public Long getLongObject() {
         return longObject;
     }
@@ -85,10 +77,6 @@ public class Foo implements Serializable {
 
     public void setDoubleObject(Double doubleObject) {
         this.doubleObject = doubleObject;
-    }
-
-    public void setStringObject(String stringObject) {
-        this.stringObject = stringObject;
     }
 
     public Bar getBar() {

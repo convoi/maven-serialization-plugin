@@ -6,7 +6,8 @@ import java.util.Date;
 /**
  * //TODO class description
  */
-public class Bar implements Serializable{
+public class Bar implements Serializable {
+
     private String string;
     private String date;
 
