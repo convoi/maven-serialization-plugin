@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VersionedSerialized {
 
+    String affectedComponent() default "unknown";
+    
     SerializationTechnique serialization() default SerializationTechnique.JAVA;
 
     enum SerializationTechnique {
