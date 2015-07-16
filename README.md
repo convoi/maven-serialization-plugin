@@ -2,12 +2,10 @@
 
 This plugin aims to help with serialization troubles occurring when several different versions of an
 application try to exchange serialized instances, by making incompatibilities between versions visible
-as early as possible.
+as early as possible. This plugin can be integrated into the build and indicates when the serialized version of an object changes.
 
 ## how it works
-The plugin is scanning the class path for classes annotated with a special annotation. It then tries to find
-a file containing an already serialized instance of this class matching that annotation. If such a file exists, it then
-tries to deserialize it and checks if the class of the deserialized instance is the same as the annotated one.
+The plugin has two different goals. One goal creates fingerprints of the annotated files (create). These fingerprints should be checked in with your code. The second goal (validate), checks whether the fingerprints of the annotated files have changed.
 
 ## usage
 Usage consists of three steps:
@@ -17,32 +15,67 @@ Usage consists of three steps:
 3. annotate classes with that annotation
 
 ### adding the plugin
+create fingerprints step
 ```xml
 <plugin>
-  <groupId>com.blocksberg.versioned-serialization</groupId>
-  <artifactId>versioned-serialization-maven-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <executions>
-    <execution>
-      <id>serialize-instances</id>
-      <goals>
-        <goal>serialize</goal>
-      </goals>
-      <phase>post-integration-test</phase>
-    </execution>
-  </executions>
-  <configuration>
-    <outputDirectory>serialized</outputDirectory>
-    <annotationClass>com.blocksberg.vsc.markers.VersionedSerialized</annotationClass>
-    <scanPackages>
-      <scanPackage>com.blocksberg.vsctest.model</scanPackage>
-    </scanPackages>
-  </configuration>
+    <groupId>com.blocksberg.versioned-serialization</groupId>
+    <artifactId>versioned-serialization-maven-plugin</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>create-fingerprints</id>
+            <goals>
+                <goal>create</goal>
+            </goals>
+            <phase>process-classes</phase>
+        </execution>
+    </executions>
+    <configuration>
+        <outputDirectory>serialized</outputDirectory>
+        <annotationClass>com.blocksberg.vsc.markers.VersionedSerialized</annotationClass>
+        <scanPackages>
+            <scanPackage>com.loyaltypartner.lm.lmsbatch.core.mobilepush.api.data</scanPackage>
+        </scanPackages>
+        <generatorClass>com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator</generatorClass>
+        <excludedGeneratorPackages>
+            <excludedGeneratorPackage>java.lang</excludedGeneratorPackage>
+        </excludedGeneratorPackages>
+    </configuration>
+</plugin>
+```
+
+
+validate fingerprints step
+```xml
+<plugin>
+    <groupId>com.blocksberg.versioned-serialization</groupId>
+    <artifactId>versioned-serialization-maven-plugin</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>validate-fingerprints</id>
+            <goals>
+                <goal>validate</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+        </execution>
+    </executions>
+    <configuration>
+        <outputDirectory>serialized</outputDirectory>
+        <annotationClass>com.blocksberg.vsc.markers.VersionedSerialized</annotationClass>
+        <scanPackages>
+            <scanPackage>com.loyaltypartner.lm.lmsbatch.core.mobilepush.api.data</scanPackage>
+        </scanPackages>
+        <generatorClass>com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator</generatorClass>
+        <excludedGeneratorPackages>
+            <excludedGeneratorPackage>java.lang</excludedGeneratorPackage>
+        </excludedGeneratorPackages>
+    </configuration>
 </plugin>
 ```
 
 You need to pick an `outputDirectory` (the place where the serialized instances are stored), an `annotationClass` and
-which packages to scan.
+which packages to scan ('scanDirectories'). 
 
 
 ### annotation
@@ -52,15 +85,6 @@ It should look roughly like this:
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VersionedSerialized {
-    String id();
-
-    int version() default 0;
-
-    SerializationTechnique serialization() default SerializationTechnique.JAVA;
-
-    enum SerializationTechnique {
-        JAVA;
-    }
 }
 ```
 
@@ -68,7 +92,7 @@ Feel free to pick a better name.
 
 ### annotate some classes
 ```java
-@VersionedSerialized(id="a", version=1)
+@VersionedSerialized
 public class A implements Serializable {
   private int anInt;
   public A(int a) {
