@@ -10,6 +10,7 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,34 +25,43 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeepSUIDFingerprintGenerator.class);
     private String[] excludedPackages;
 
-    public DeepSUIDFingerprintGenerator(String... excludedPackages) {
+    public DeepSUIDFingerprintGenerator() {
+        this.excludedPackages = new String[0];
+    }
+
+    public DeepSUIDFingerprintGenerator(final String... excludedPackages) {
         this.excludedPackages = excludedPackages;
     }
 
     @Override
-    public long getFingerprint(Class<?> clazz) throws FingerprintGenerationException {
-        Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz);
-        Set<Class<?>> serializableClasses = filterSerializableClasses(classes);
+    public void setExcludedPackages(final List<String> excludedPackages) {
+        this.excludedPackages = excludedPackages.toArray(new String[excludedPackages.size()]);
+    }
+
+    @Override
+    public long getFingerprint(final Class<?> clazz) throws FingerprintGenerationException {
+        final Set<Class<?>> classes = collectClasses(new HashSet<Class<?>>(), clazz);
+        final Set<Class<?>> serializableClasses = filterSerializableClasses(classes);
         Map<Class<?>, Long> serialVersionUIDMap;
         try {
             serialVersionUIDMap = buildSerialVersionUIDMap(serializableClasses);
-        } catch (NoSuchFieldException e) {
+        } catch (final NoSuchFieldException e) {
             throw new FingerprintGenerationException(e);
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             throw new FingerprintGenerationException(e);
         }
 
         return generateFingerprint(serialVersionUIDMap);
     }
 
-    private Set<Class<?>> collectClasses(Set<Class<?>> classes, Class<?> clazz) {
+    private Set<Class<?>> collectClasses(final Set<Class<?>> classes, final Class<?> clazz) {
         if (!classes.contains(clazz) && !isExcluded(clazz)) {
             classes.add(clazz);
-            Field[] clazzDeclaredFields = clazz.getDeclaredFields();
-            for (Field declaredField : clazzDeclaredFields) {
-                Type type = declaredField.getGenericType();
+            final Field[] clazzDeclaredFields = clazz.getDeclaredFields();
+            for (final Field declaredField : clazzDeclaredFields) {
+                final Type type = declaredField.getGenericType();
                 if (type instanceof ParameterizedType) {
-                    for (Type parameterType : ((ParameterizedType) type).getActualTypeArguments()) {
+                    for (final Type parameterType : ((ParameterizedType) type).getActualTypeArguments()) {
                         if (parameterType instanceof Class) {
                             collectClasses(classes, (Class<?>) parameterType);
                         }
@@ -63,8 +73,8 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         return classes;
     }
 
-    private boolean isExcluded(Class<?> clazz) {
-        for (String excludedPackage : excludedPackages) {
+    private boolean isExcluded(final Class<?> clazz) {
+        for (final String excludedPackage : excludedPackages) {
             if (clazz.getCanonicalName().startsWith(excludedPackage)) {
                 return true;
             }
@@ -72,9 +82,9 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         return false;
     }
 
-    private Set<Class<?>> filterSerializableClasses(Set<Class<?>> classes) {
-        Set<Class<?>> serializableClasses = new HashSet<Class<?>>();
-        for (Class<?> clazz : classes) {
+    private Set<Class<?>> filterSerializableClasses(final Set<Class<?>> classes) {
+        final Set<Class<?>> serializableClasses = new HashSet<Class<?>>();
+        for (final Class<?> clazz : classes) {
             if (isSerializable(clazz)) {
                 serializableClasses.add(clazz);
             }
@@ -82,21 +92,21 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         return serializableClasses;
     }
 
-    private Map<Class<?>, Long> buildSerialVersionUIDMap(Set<Class<?>> serializableClasses)
+    private Map<Class<?>, Long> buildSerialVersionUIDMap(final Set<Class<?>> serializableClasses)
         throws NoSuchFieldException, IllegalAccessException {
-        Map<Class<?>, Long> serialVersionUIDMap = new HashMap<Class<?>, Long>();
-        for (Class<?> clazz : serializableClasses) {
+        final Map<Class<?>, Long> serialVersionUIDMap = new HashMap<Class<?>, Long>();
+        for (final Class<?> clazz : serializableClasses) {
             serialVersionUIDMap.put(clazz, getComputedSerialVersionUID(clazz));
         }
         return serialVersionUIDMap;
     }
 
-    private boolean isSerializable(Class<?> clazz) {
-        ObjectStreamClass c = ObjectStreamClass.lookup(clazz);
+    private boolean isSerializable(final Class<?> clazz) {
+        final ObjectStreamClass c = ObjectStreamClass.lookup(clazz);
         return c != null;
     }
 
-    private long getComputedSerialVersionUID(Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
+    private long getComputedSerialVersionUID(final Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
         final ObjectStreamClass objectStreamClass = ObjectStreamClass.lookup(clazz);
         final Field serialVersionUID = ObjectStreamClass.class.getDeclaredField("suid");
         if (serialVersionUID != null) {
@@ -106,12 +116,12 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
         return objectStreamClass.getSerialVersionUID();
     }
 
-    private long generateFingerprint(Map<Class<?>, Long> serialVersionUIDMap) {
+    private long generateFingerprint(final Map<Class<?>, Long> serialVersionUIDMap) {
         LOGGER.info("serialVersionUIDMap with size = {}", serialVersionUIDMap.size());
         System.out.println("serialVersionUIDMap with size = " + serialVersionUIDMap.size());
         long fingerprint = 0l;
-        for (Map.Entry<Class<?>, Long> entry : serialVersionUIDMap.entrySet()) {
-            String message =
+        for (final Map.Entry<Class<?>, Long> entry : serialVersionUIDMap.entrySet()) {
+            final String message =
                     MessageFormat.format("class: {0}, suid: {1}", entry.getKey().getCanonicalName(), entry.getValue());
             LOGGER.info(message);
             System.out.println(message);

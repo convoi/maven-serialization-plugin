@@ -1,7 +1,7 @@
 package com.blocksberg.vsc;
 
-import com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator;
 import com.blocksberg.vsc.manufacturing.FingerprintGenerationException;
+import com.blocksberg.vsc.manufacturing.FingerprintGenerator;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -31,133 +31,132 @@ import java.util.Set;
 @Mojo(name = "create", defaultPhase = LifecyclePhase.INTEGRATION_TEST)
 public class CreateFingerprintsMojo extends AbstractMojo {
 
-	/**
-	 * Location of the file.
-	 * 
-	 * @parameter expression="${project.build.directory}"
-	 * @required
-	 */
-	@Parameter(name = "outputDirectory", defaultValue = ".")
-	private File outputDirectory;
+    /**
+     * Location of the file.
+     * 
+     * @parameter expression="${project.build.directory}"
+     * @required
+     */
+    @Parameter(name = "outputDirectory", defaultValue = ".")
+    private File outputDirectory;
 
-	@Parameter(name = "annotationClass")
-	private String annotationClass;
+    @Parameter(name = "annotationClass")
+    private String annotationClass;
 
-	@Parameter(name = "enforceAnnotatedClasses", defaultValue = "false")
-	private boolean enforceAnnotatedClasses;
+    @Parameter(name = "enforceAnnotatedClasses", defaultValue = "false")
+    private boolean enforceAnnotatedClasses;
 
-	@Parameter(name = "scanPackages")
-	private List<String> scanPackages;
+    @Parameter(name = "scanPackages")
+    private List<String> scanPackages;
 
-	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject project;
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    private MavenProject project;
 
-	@Parameter(property = "clazz", defaultValue = "ALL")
-	private String clazz;
+    @Parameter(property = "clazz", defaultValue = "ALL")
+    private String clazz;
 
-	public void setClazz(String clazz) {
-		this.clazz = clazz;
-	}
+    @Parameter(name = "generatorClass", property = "generatorClass",
+            defaultValue = "com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator")
+    private String generatorClass;
 
-	private ClassLoader classLoader;
-	private List<URL> urlsToScan;
+    @Parameter(name = "excludedGeneratorPackages")
+    private List<String> excludedGeneratorPackages;
 
-	private AnnotationScanner annotationScanner;
+    private FingerprintGenerator generator;
 
-	public void execute() throws MojoExecutionException {
+    private ClassLoader classLoader;
+    private List<URL> urlsToScan;
 
-		if (!outputDirectory.exists()) {
-			outputDirectory.mkdirs();
-		}
-		try {
-			urlsToScan = getUrlsToScan();
-			classLoader = getClassLoader();
-			initAnnotationScanner();
+    private AnnotationScanner annotationScanner;
 
-			try {
-				serializeAnnotatedClasses(clazz);
-			} catch (Exception e) {
-				throw new MojoExecutionException("an error occured:"
-						+ e.getClass().getCanonicalName() + " "
-						+ e.getMessage(), e);
-			}
-		} catch (DependencyResolutionRequiredException e) {
-			throw new MojoExecutionException("dependecy resolution problem", e);
-		} catch (MalformedURLException e) {
-			throw new MojoExecutionException(
-					"could not initialize classloader, probably there is a problem with the "
-							+ "classpath", e);
-		}
+    // public void setClazz(String clazz) {
+    // this.clazz = clazz;
+    // }
 
-	}
+    public void execute() throws MojoExecutionException {
 
-	private void initAnnotationScanner() throws MalformedURLException {
-		annotationScanner = new AnnotationScanner(scanPackages, classLoader,
-				urlsToScan, annotationClass);
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs();
+        }
 
-	}
+        try {
+            urlsToScan = getUrlsToScan();
+            classLoader = getClassLoader();
+            initAnnotationScanner();
+        } catch (Exception e) {
+            throw new MojoExecutionException("Initialize classloader failed, probably there is a problem with the "
+                    + "classpath", e);
+        }
+        try {
+            generator =
+                    (FingerprintGenerator) FingerprintGenerator.class.getClassLoader().loadClass(generatorClass)
+                            .newInstance();
+            generator.setExcludedPackages(excludedGeneratorPackages);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Creating generator (" + generatorClass + ") failed.", e);
+        }
 
-	public ClassLoader getClassLoader()
-			throws DependencyResolutionRequiredException, MalformedURLException {
-		if (project != null) {
-			final URL[] urlArray = urlsToScan
-					.toArray(new URL[urlsToScan.size()]);
-			final URLClassLoader urlClassLoader = new URLClassLoader(urlArray);
-			return urlClassLoader;
-		} else {
-			return getClass().getClassLoader();
-		}
-	}
+        try {
+            serializeAnnotatedClasses(clazz);
+        } catch (Exception e) {
+            throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
+                    + e.getMessage(), e);
+        }
+    }
 
-	public List<URL> getUrlsToScan() throws MalformedURLException,
-			DependencyResolutionRequiredException {
-		if (project != null) {
-			final List<String> compileClasspathElements = new ArrayList<String>(
-					project.getCompileClasspathElements());
-			for (Artifact artifact : project.getDependencyArtifacts()) {
-				compileClasspathElements.add(artifact.getFile().toString());
-			}
-			if (compileClasspathElements != null) {
-				getLog().info(compileClasspathElements.toString());
-			}
-			return makeClasspathUrls(compileClasspathElements);
-		} else {
-			return Collections.singletonList(new File(".").toURI().toURL());
-		}
-	}
+    private void initAnnotationScanner() throws MalformedURLException {
+        annotationScanner = new AnnotationScanner(scanPackages, classLoader, urlsToScan, annotationClass);
 
-	private void serializeAnnotatedClasses(String classToFingerprint)
-			throws IOException, ClassNotFoundException, NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException,
-			FingerprintGenerationException {
-		final Set<Class<?>> classes = annotationScanner.scan();
-		getLog().info(
-				"found " + classes.size() + " classes, annotated by "
-						+ annotationClass);
-		for (Class<?> aClass : classes) {
-			if ("ALL".equals(classToFingerprint)
-					|| classToFingerprint.equals(aClass.getSimpleName())
-					|| classToFingerprint.equals(aClass.getCanonicalName())) {
-				getLog().debug(
-						"trying to serialize instance of "
-								+ aClass.getCanonicalName());
+    }
 
-				new FingerprintFile(aClass, new DeepSUIDFingerprintGenerator())
-						.create(outputDirectory);
-			}
-		}
-	}
+    public ClassLoader getClassLoader() throws DependencyResolutionRequiredException, MalformedURLException {
+        if (project != null) {
+            final URL[] urlArray = urlsToScan.toArray(new URL[urlsToScan.size()]);
+            final URLClassLoader urlClassLoader = new URLClassLoader(urlArray);
+            return urlClassLoader;
+        } else {
+            return getClass().getClassLoader();
+        }
+    }
 
-	private List<URL> makeClasspathUrls(List<String> classpaths)
-			throws MalformedURLException {
-		final List<URL> urls = new ArrayList<URL>();
-		if (classpaths != null) {
-			for (String classpath : classpaths) {
-				urls.add(new File(classpath).toURI().toURL());
-			}
-			return urls;
-		} else {
-			return null;
-		}
-	}
+    public List<URL> getUrlsToScan() throws MalformedURLException, DependencyResolutionRequiredException {
+        if (project != null) {
+            final List<String> compileClasspathElements = new ArrayList<String>(project.getCompileClasspathElements());
+            for (Artifact artifact : project.getDependencyArtifacts()) {
+                compileClasspathElements.add(artifact.getFile().toString());
+            }
+            if (compileClasspathElements != null) {
+                getLog().info(compileClasspathElements.toString());
+            }
+            return makeClasspathUrls(compileClasspathElements);
+        } else {
+            return Collections.singletonList(new File(".").toURI().toURL());
+        }
+    }
+
+    private void serializeAnnotatedClasses(String classToFingerprint) throws IOException, ClassNotFoundException,
+        NoSuchMethodException, IllegalAccessException, InvocationTargetException, FingerprintGenerationException {
+        final Set<Class<?>> classes = annotationScanner.scan();
+        getLog().info("found " + classes.size() + " classes, annotated by " + annotationClass);
+        for (Class<?> aClass : classes) {
+            if ("ALL".equals(classToFingerprint) || classToFingerprint.equals(aClass.getSimpleName())
+                    || classToFingerprint.equals(aClass.getCanonicalName())) {
+                getLog().debug("trying to serialize instance of " + aClass.getCanonicalName());
+
+                new FingerprintFile(aClass, generator).create(outputDirectory);
+            }
+        }
+    }
+
+    private List<URL> makeClasspathUrls(List<String> classpaths) throws MalformedURLException {
+        final List<URL> urls = new ArrayList<URL>();
+        if (classpaths != null) {
+            for (String classpath : classpaths) {
+                urls.add(new File(classpath).toURI().toURL());
+            }
+            return urls;
+        } else {
+            return null;
+        }
+    }
 }

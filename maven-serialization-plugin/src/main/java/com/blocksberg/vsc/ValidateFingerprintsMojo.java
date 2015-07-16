@@ -1,7 +1,7 @@
 package com.blocksberg.vsc;
 
-import com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator;
 import com.blocksberg.vsc.manufacturing.FingerprintGenerationException;
+import com.blocksberg.vsc.manufacturing.FingerprintGenerator;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -51,6 +51,15 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
+    @Parameter(name = "generatorClass", property = "generatorClass",
+            defaultValue = "com.blocksberg.vsc.manufacturing.DeepSUIDFingerprintGenerator")
+    private String generatorClass;
+
+    @Parameter(name = "excludedGeneratorPackages")
+    private List<String> excludedGeneratorPackages;
+
+    private FingerprintGenerator generator;
+
     private ClassLoader classLoader;
     private List<URL> urlsToScan;
 
@@ -62,41 +71,47 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
             urlsToScan = getUrlsToScan();
             classLoader = getClassLoader();
             initAnnotationScanner();
-
-            final Set<FingerprintFile> fingerprintsFromLastRun = getFingerprintedFiles();
-            final Set<FingerprintFile> fingerprintsFromCurrentRun;
-            try {
-                fingerprintsFromCurrentRun = getCurrentFingerprintedFiles();
-            } catch (final Exception e) {
-                throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
-                        + e.getMessage(), e);
-            }
-
-            final FingerprintChangeManager changeManager =
-                    new FingerprintChangeManager(fingerprintsFromLastRun, fingerprintsFromCurrentRun);
-
-            if (!changeManager.getAddedClassNames().isEmpty() || !changeManager.getChangedClassNames().isEmpty()
-                    || !changeManager.getDeletedClassNames().isEmpty()) {
-
-                String errorMessage = new String();
-                if (!changeManager.getAddedClassNames().isEmpty()) {
-                    errorMessage = String.format("\r\nAdded files: %s", changeManager.getAddedClassNames());
-                }
-                if (!changeManager.getDeletedClassNames().isEmpty()) {
-                    errorMessage += String.format("\r\nDeleted Files: %s", changeManager.getDeletedClassNames());
-                }
-                if (!changeManager.getChangedClassNames().isEmpty()) {
-                    errorMessage += String.format("\r\nChanged Files: %s", changeManager.getChangedClassNames());
-                }
-
-                throw new MojoExecutionException(errorMessage);
-            }
-
-        } catch (final DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("dependecy resolution problem", e);
-        } catch (final MalformedURLException e) {
-            throw new MojoExecutionException("could not initialize classloader, probably there is a problem with the "
+        } catch (Exception e) {
+            throw new MojoExecutionException("Initialize classloader failed, probably there is a problem with the "
                     + "classpath", e);
+        }
+
+        try {
+            generator =
+                    (FingerprintGenerator) FingerprintGenerator.class.getClassLoader().loadClass(generatorClass)
+                            .newInstance();
+            generator.setExcludedPackages(excludedGeneratorPackages);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Creating generator (" + generatorClass + ") failed.", e);
+        }
+
+        final Set<FingerprintFile> fingerprintsFromLastRun = getFingerprintedFiles();
+        final Set<FingerprintFile> fingerprintsFromCurrentRun;
+        try {
+            fingerprintsFromCurrentRun = getCurrentFingerprintedFiles();
+        } catch (final Exception e) {
+            throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
+                    + e.getMessage(), e);
+        }
+
+        final FingerprintChangeManager changeManager =
+                new FingerprintChangeManager(fingerprintsFromLastRun, fingerprintsFromCurrentRun);
+
+        if (!changeManager.getAddedClassNames().isEmpty() || !changeManager.getChangedClassNames().isEmpty()
+                || !changeManager.getDeletedClassNames().isEmpty()) {
+
+            String errorMessage = new String();
+            if (!changeManager.getAddedClassNames().isEmpty()) {
+                errorMessage = String.format("\r\nAdded files: %s", changeManager.getAddedClassNames());
+            }
+            if (!changeManager.getDeletedClassNames().isEmpty()) {
+                errorMessage += String.format("\r\nDeleted Files: %s", changeManager.getDeletedClassNames());
+            }
+            if (!changeManager.getChangedClassNames().isEmpty()) {
+                errorMessage += String.format("\r\nChanged Files: %s", changeManager.getChangedClassNames());
+            }
+
+            throw new MojoExecutionException(errorMessage);
         }
 
     }
@@ -107,7 +122,7 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
         final Set<Class<?>> classes = annotationScanner.scan();
         getLog().info("found " + classes.size() + " classes, annotated by " + annotationClass);
         for (final Class<?> aClass : classes) {
-            result.add(new FingerprintFile(aClass, new DeepSUIDFingerprintGenerator()));
+            result.add(new FingerprintFile(aClass, generator));
         }
         return result;
     }
