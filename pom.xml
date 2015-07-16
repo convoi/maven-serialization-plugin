@@ -116,12 +116,12 @@
     </dependencyManagement>
     <distributionManagement>
         <repository>
-            <id>releases</id>
+            <id>sonatype-releases</id>
             <name>Releases on Sonatype Nexus</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>sonatype-snapshots</id>
             <name>Snapshots on Sonatype Nexus</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
