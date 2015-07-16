@@ -3,7 +3,7 @@
     <groupId>com.blocksberg.versioned-serialization</groupId>
     <artifactId>versioned-serialization-checks</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <modules>
         <module>maven-serialization-plugin</module>
         <module>markers</module>
@@ -130,6 +130,6 @@
         <url>https://github.com/convoi/maven-serialization-plugin</url>
         <connection>scm:git:https://github.com/convoi/maven-serialization-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/convoi/maven-serialization-plugin.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>versioned-serialization-checks-1.1</tag>
   </scm>
 </project>
