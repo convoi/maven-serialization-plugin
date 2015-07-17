@@ -3,7 +3,7 @@
     <groupId>com.blocksberg.versioned-serialization</groupId>
     <artifactId>versioned-serialization-checks</artifactId>
     <packaging>pom</packaging>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <modules>
         <module>maven-serialization-plugin</module>
         <module>markers</module>

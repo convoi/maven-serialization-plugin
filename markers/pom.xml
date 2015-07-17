@@ -4,11 +4,11 @@
     <parent>
         <artifactId>versioned-serialization-checks</artifactId>
         <groupId>com.blocksberg.versioned-serialization</groupId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>versioned-serialization-markers</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
 
