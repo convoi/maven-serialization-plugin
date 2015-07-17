@@ -17,6 +17,12 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <name>Justin Heesemann</name>
+            <url>https://github.com/convoi</url>
+        </developer>
+    </developers>
 
     <properties>
         <javaVersion>1.6</javaVersion>
@@ -33,6 +39,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.6</version>
                 </plugin>
             </plugins>
         </pluginManagement>
