@@ -70,6 +70,9 @@ public class DeepSUIDFingerprintGenerator implements FingerprintGenerator {
                 collectClasses(classes, declaredField.getType());
             }
         }
+        if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+            collectClasses(classes, clazz.getSuperclass());
+        }
         return classes;
     }
 

@@ -71,7 +71,7 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
             urlsToScan = getUrlsToScan();
             classLoader = getClassLoader();
             initAnnotationScanner();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new MojoExecutionException("Initialize classloader failed, probably there is a problem with the "
                     + "classpath", e);
         }
@@ -81,11 +81,13 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
                     (FingerprintGenerator) FingerprintGenerator.class.getClassLoader().loadClass(generatorClass)
                             .newInstance();
             generator.setExcludedPackages(excludedGeneratorPackages);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new MojoExecutionException("Creating generator (" + generatorClass + ") failed.", e);
         }
 
         final Set<FingerprintFile> fingerprintsFromLastRun = getFingerprintedFiles();
+        validateFingerprintedFiles(fingerprintsFromLastRun);
+
         final Set<FingerprintFile> fingerprintsFromCurrentRun;
         try {
             fingerprintsFromCurrentRun = getCurrentFingerprintedFiles();
@@ -137,7 +139,21 @@ public class ValidateFingerprintsMojo extends AbstractMojo {
         } else {
             return Collections.<FingerprintFile> emptySet();
         }
+    }
 
+    private void validateFingerprintedFiles(final Set<FingerprintFile> files) throws MojoExecutionException {
+        final Set<String> fileNames = new HashSet<String>();
+        final Set<String> duplicates = new HashSet<String>();
+        for (final FingerprintFile file : files) {
+            if (fileNames.contains(file.getClassName())) {
+                duplicates.add(file.getClassName());
+            }
+            fileNames.add(file.getClassName());
+        }
+        if (!duplicates.isEmpty()) {
+            throw new MojoExecutionException("The following classes have duplicate entries in the serialized folder: "
+                    + duplicates);
+        }
     }
 
     private void initAnnotationScanner() throws MalformedURLException {

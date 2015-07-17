@@ -13,6 +13,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -83,7 +84,7 @@ public class CreateFingerprintsMojo extends AbstractMojo {
             urlsToScan = getUrlsToScan();
             classLoader = getClassLoader();
             initAnnotationScanner();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new MojoExecutionException("Initialize classloader failed, probably there is a problem with the "
                     + "classpath", e);
         }
@@ -92,13 +93,13 @@ public class CreateFingerprintsMojo extends AbstractMojo {
                     (FingerprintGenerator) FingerprintGenerator.class.getClassLoader().loadClass(generatorClass)
                             .newInstance();
             generator.setExcludedPackages(excludedGeneratorPackages);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new MojoExecutionException("Creating generator (" + generatorClass + ") failed.", e);
         }
 
         try {
             serializeAnnotatedClasses(clazz);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new MojoExecutionException("an error occured:" + e.getClass().getCanonicalName() + " "
                     + e.getMessage(), e);
         }
@@ -122,7 +123,7 @@ public class CreateFingerprintsMojo extends AbstractMojo {
     public List<URL> getUrlsToScan() throws MalformedURLException, DependencyResolutionRequiredException {
         if (project != null) {
             final List<String> compileClasspathElements = new ArrayList<String>(project.getCompileClasspathElements());
-            for (Artifact artifact : project.getDependencyArtifacts()) {
+            for (final Artifact artifact : project.getDependencyArtifacts()) {
                 compileClasspathElements.add(artifact.getFile().toString());
             }
             if (compileClasspathElements != null) {
@@ -134,13 +135,27 @@ public class CreateFingerprintsMojo extends AbstractMojo {
         }
     }
 
-    private void serializeAnnotatedClasses(String classToFingerprint) throws IOException, ClassNotFoundException,
+    private void serializeAnnotatedClasses(final String classToFingerprint) throws IOException, ClassNotFoundException,
         NoSuchMethodException, IllegalAccessException, InvocationTargetException, FingerprintGenerationException {
         final Set<Class<?>> classes = annotationScanner.scan();
         getLog().info("found " + classes.size() + " classes, annotated by " + annotationClass);
-        for (Class<?> aClass : classes) {
+        for (final Class<?> aClass : classes) {
             if ("ALL".equals(classToFingerprint) || classToFingerprint.equals(aClass.getSimpleName())
                     || classToFingerprint.equals(aClass.getCanonicalName())) {
+
+                final File[] existingFiles = outputDirectory.listFiles(new FilenameFilter() {
+
+                    @Override
+                    public boolean accept(final File dir, final String name) {
+                        return new FingerprintFile(name).getClassName().equals(aClass.getCanonicalName());
+                    }
+                });
+
+                for (File existingFile : existingFiles) {
+                    getLog().debug("deleting existing file " + existingFile.getName());
+                    existingFile.delete();
+                }
+
                 getLog().debug("trying to serialize instance of " + aClass.getCanonicalName());
 
                 new FingerprintFile(aClass, generator).create(outputDirectory);
@@ -148,10 +163,10 @@ public class CreateFingerprintsMojo extends AbstractMojo {
         }
     }
 
-    private List<URL> makeClasspathUrls(List<String> classpaths) throws MalformedURLException {
+    private List<URL> makeClasspathUrls(final List<String> classpaths) throws MalformedURLException {
         final List<URL> urls = new ArrayList<URL>();
         if (classpaths != null) {
-            for (String classpath : classpaths) {
+            for (final String classpath : classpaths) {
                 urls.add(new File(classpath).toURI().toURL());
             }
             return urls;

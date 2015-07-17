@@ -1,5 +1,7 @@
 package com.blocksberg.vsc.manufacturing;
 
+import com.blocksberg.vsc.testmodel.hierarchy.SubClass;
+
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -16,27 +18,40 @@ public class DeepSUIDFingerprintGeneratorTest {
 
     @Test
     public void computesDifferentFingerprintsForDifferentClasses() throws Exception {
-        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
-        long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
-        long anotherTestClassFingerprint = fingerprintGenerator.getFingerprint(AnotherTestClass.class);
+        final DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+        final long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
+        final long anotherTestClassFingerprint = fingerprintGenerator.getFingerprint(AnotherTestClass.class);
         assertThat(testClassFingerprint, is(not(anotherTestClassFingerprint)));
     }
 
     @Test
     public void canExcludePackages() throws Exception {
-        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
-        DeepSUIDFingerprintGenerator fingerprintGeneratorWithExclusion =
+        final DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+        final DeepSUIDFingerprintGenerator fingerprintGeneratorWithExclusion =
                 new DeepSUIDFingerprintGenerator("java.lang", "java.util");
-        long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
-        long testClassFingerprintExcluded = fingerprintGeneratorWithExclusion.getFingerprint(TestClass.class);
+        final long testClassFingerprint = fingerprintGenerator.getFingerprint(TestClass.class);
+        final long testClassFingerprintExcluded = fingerprintGeneratorWithExclusion.getFingerprint(TestClass.class);
         assertThat(testClassFingerprintExcluded, is(not(testClassFingerprint)));
     }
 
     @Test
     public void terminatesForCyclicDependency() throws Exception {
-        DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
+        final DeepSUIDFingerprintGenerator fingerprintGenerator = new DeepSUIDFingerprintGenerator();
         fingerprintGenerator.getFingerprint(FirstCyclicDependencyTestClass.class);
         assertTrue(true);
+    }
+
+    @Test
+    public void regardsSuperClasses() throws FingerprintGenerationException {
+        final DeepSUIDFingerprintGenerator fingerprintGeneratorWithSuperClass = new DeepSUIDFingerprintGenerator();
+        final long fingerPrintWithSuperClass = fingerprintGeneratorWithSuperClass.getFingerprint(SubClass.class);
+
+        final DeepSUIDFingerprintGenerator fingerprintGeneratorWithoutSuperClass =
+                new DeepSUIDFingerprintGenerator("com.blocksberg.vsc.testmodel.hierarchy.superclass");
+        final long fingerPrintWithoutSuperClass = fingerprintGeneratorWithoutSuperClass.getFingerprint(SubClass.class);
+
+        assertThat(fingerPrintWithSuperClass, is(not(fingerPrintWithoutSuperClass)));
+
     }
 
     private static class TestClass implements Serializable {
