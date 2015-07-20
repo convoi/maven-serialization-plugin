@@ -22,6 +22,9 @@
             <name>Justin Heesemann</name>
             <url>https://github.com/convoi</url>
         </developer>
+        <developer>
+            <name>Hugh Dollman</name>
+        </developer>
     </developers>
 
     <properties>
