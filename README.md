@@ -1,5 +1,7 @@
 # maven-serialization-plugin
 
+[![Build Status](https://travis-ci.org/convoi/maven-serialization-plugin.svg?branch=master)](https://travis-ci.org/convoi/maven-serialization-plugin)
+
 This plugin aims to help with serialization troubles occurring when several different versions of an
 application try to exchange serialized instances, by making incompatibilities between versions visible
 as early as possible. This plugin can be integrated into the build and indicates when the serialized version of an object changes.
